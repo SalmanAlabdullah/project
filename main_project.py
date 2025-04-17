@@ -1,5 +1,5 @@
 import sqlite3
-
+print("hee")
 # كائن ليطبق وضائف SQL
 class sql:
     def __init__(self, sql):
@@ -157,19 +157,21 @@ while True:
                 break
 
             # شرط لحذف طالب
-            # ++++++++++++++++++++ هذا هو الكود اللذي به المشكلة ++++++++++++++++++++
             elif command == "d":
+
+
                 while True :
                     remove = input("أدخل رقم الطالب المراد حذفه : ")
                     if academy_database.verify(remove):
-                        print('تم الدخول الى if')
                         academy_database.verify_message(remove)
                         academy_database.remove(remove)
-                        break # بريك لا تعمل
+                        break
+
                     else:
-                        print('تم الدخول الى else')
                         academy_database.verify_message(remove)
-                        break # بريك لا تعمل
+
+                break
+
 
 
             # شرط لتعديل على طالب
