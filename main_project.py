@@ -1,160 +1,74 @@
-import sqlite3
+# dinosaur-game
 
-# كائن ليطبق وضائف SQL
-class sql:
-    def __init__(self, sql):
-        self.db = sqlite3.connect(f"{sql}")
+import random
+import sys
+import pygame
 
-    def insert(self, table, add):
-        self.db.execute(f"INSERT INTO {table} VALUES ({add})")
-        self.db.commit()
-        # self.db.close()
+# Initialize Pygame
+pygame.init()
 
-    def remove(self, table, remove):
-        self.db.execute(f"DELETE FROM {table} WHERE ID = {remove} ")
-        self.db.commit()
+# Constants
+WIDTH, HEIGHT = 800, 400
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+FPS = 60
 
-    def edit(self, table, edit, ID):
-        if edit != "n" and edit != '':
-            self.db.execute(f"UPDATE {table} SET {edit} WHERE ID = {ID}")
-        self.db.commit()
+# Set up the display
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Dinosaur Game")
 
-    def show(self, table, students_num):
-        db_cursor = self.db.cursor()
-        db_cursor.execute(f"SELECT NAME , NICKNAME, AGE , CLASS , REGISTER_DATE , LESSON FROM Students"
-                          f" ST LEFT JOIN LESSONS LE ON ST.ID = LE.ID WHERE ST.ID = {students_num}")
-        rows = db_cursor.fetchall()
-        print(f'--- ID = {students_num} ---')
-        for row in rows:
-            print(row)
+# Load images
+dino_image = pygame.image.load("dino.png")
+cactus_image = pygame.image.load("cactus.png")
 
-        if rows == []:
-            print("الطالب غير موجود")
+# Game variables
+dino_x, dino_y = 50, HEIGHT - 70
+cactus_x = WIDTH
+cactus_y = HEIGHT - 70
+score = 0
+jumping = False
+jump_count = 10
+
+# Main game loop
+clock = pygame.time.Clock()
+running = True
+while running:
+    clock.tick(FPS)
+    screen.fill(WHITE)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE] and not jumping:
+        jumping = True
+
+    if jumping:
+        if jump_count >= -10:
+            neg = 1 if jump_count >= 0 else -1
+            dino_y -= (jump_count ** 2) * 0.5 * neg
+            jump_count -= 1
         else:
-            print("تمت العملية بنجاح")
+            jumping = False
+            jump_count = 10
 
-    def verify(self, remove):
-        db_cursor = self.db.cursor()
-        db_cursor.execute(f"SELECT * FROM Students WHERE ID = {remove}")
-        rows = db_cursor.fetchall()
+    cactus_x -= 10
+    if cactus_x < -50:
+        cactus_x = WIDTH
+        score += 1
 
-        if rows == []:
-            return False
-        else:
-            return True
+    # Collision detection
+    if (dino_x + 50 > cactus_x) and (dino_x < cactus_x + 50) and (dino_y + 50 > cactus_y):
+        print("Game Over! Your score was:", score)
+        pygame.quit()
+        sys.exit()
 
-    def verify_message(self, remove):
-        if self.verify(remove):
-            print("تمت العملية بنجاح")
-        else:
-            print("الطالب غير موجود")
+    # Draw the dinosaur and cactus
+    screen.blit(dino_image, (dino_x, dino_y))
+    screen.blit(cactus_image, (cactus_x, cactus_y))
 
-    def close(self):
-        self.db.close()
+    # Update the display
+    pygame.display.update()
 
-    def commit(self):
-        self.db.commit()
-
-# الرباط مع SQL
-academy_database = sql("ACADEMY.sqlite")
-
-# دالة تهيئة للتعديل على جدول
-def edit_1(data_type, str_int, data_type_print):
-    order = input(f"أدخل {data_type_print} (إذا كنت لاتريد تغيير {data_type_print} اتركه فارغا)")
-    edit_list = []
-    if str_int == 'str':
-        if order != '':
-            return f'{data_type} = "{order}"'
-    else:
-        if order != '':
-            return f'{data_type} = {order}'
-    return "n"
-
-# البرنامج
-while True:
-    try:
-        command = input("الرجاء اختيار العملية التي تريد إجرائها:\n* لإضافة طالب إضغط على حرف a"
-                        "\n* لحذف طالب إضغط على حرف d\n* لتعديل معلومات طالب إضغط على حرف u"
-                        "\n* لعرض معلومات طالب إضغط على حرف s\n")
-
-
-        while True:
-
-            # شرط لإضافة طالب
-            if command == "a":
-                option_to_add = input("لإضافة درس جديد لطالب موجود [y] لإضافة طالب جديد [n]")
-                ID = input("رقم الطالب")
-
-
-
-                if option_to_add == 'n' :
-                    data = [ID , f'"{input("الأسم")}"', f'"{input("الكنية")}"',
-                            input("العمر"), f'"{input("الصف")}"', f'"{input("تاريخ التسجيل")}"']
-                    str_data = []
-                    for x in data:
-                        str_data.append(str(x))
-                    join_str_data = ",".join(str_data)
-
-
-
-                    academy_database.insert("Students", join_str_data)
-
-                lessons = f'"{input("الدروس")}"'
-                academy_database.insert('LESSONS', f' {ID} , {lessons} ')
-
-                print("تمت العملية بنجاح")
-                break
-
-            # شرط لحذف طالب
-            elif command == "d":
-                remove = input("أدخل رقم الطالب المراد حذفه")
-                academy_database.verify_message(remove)
-                academy_database.remove("LESSONS", remove)
-                academy_database.remove("Students", remove)
-                break
-
-            # شرط لتعديل على طالب
-            elif command == "u":
-                ID = input("أدخل رقم الطالب")
-
-                if academy_database.verify(ID) is False:
-                    print("الطالب غير موجود")
-                else:
-                    edit = [edit_1('NAME', 'str', 'الأسم'),
-                            edit_1('NICKNAME', 'str', 'الكنية'),
-                            edit_1('AGE', 'int', 'العمر'),
-                            edit_1('CLASS', 'str', 'الصف'),
-                            edit_1('REGISTER_DATE', 'str', 'تاريخ التسجيل')]
-
-                    lesson_edit = edit_1('LESSON', 'str', 'الدروس')
-
-                    edit_list = []
-                    for change in edit:
-                        if change != 'n':
-                            edit_list.append(change)
-
-                    edit_join = ','.join(edit_list)
-
-                    academy_database.edit("LESSONS", lesson_edit, ID)
-                    academy_database.edit("Students", edit_join, ID)
-                    academy_database.verify_message(ID)
-
-                break
-
-            # شرط لرؤية بيانات طالب
-            elif command == "s":
-                students_num = input("أدخل البيانات المراد إطهارها")
-                academy_database.show("Students", students_num)
-                break
-
-            else:
-                command = input("الإدخال خاطئ اعد الإدخال : ")
-
-        end = input("هل تريد إنها البرنامج؟ إضغط [y]")
-        if end == "y":
-            academy_database.commit()
-            academy_database.close()
-            break
-
-    except:
-        print("هناك خطأ يرجى إعادة الإدخال")
+pygame.quit()
