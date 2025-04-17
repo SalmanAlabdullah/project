@@ -201,8 +201,17 @@ while True:
 
             # شرط لرؤية بيانات طالب
             elif command == "s":
-                students_num = input("أدخل البيانات المراد إطهارها")
-                academy_database.show("Students", students_num)
+                while True :
+                    students_num = input("أدخل البيانات المراد إطهارها")
+                    if academy_database.verify(students_num):
+                        academy_database.show("Students", students_num)
+                        break
+                    else:
+                        academy_database.verify_message(students_num)
+
+
+
+
                 break
 
             else:
