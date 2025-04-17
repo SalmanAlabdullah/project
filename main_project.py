@@ -109,10 +109,10 @@ def edit_1(data_type, str_int, data_type_print):
         if order != '':
             return f'{data_type} = {order}'
     return "n"
-#sasa
+
 # البرنامج
 while True:
-    # try:
+    try:
         command = input("الرجاء اختيار العملية التي تريد إجرائها:\n* لإضافة طالب إضغط على حرف a"
                         "\n* لحذف طالب إضغط على حرف d\n* لتعديل معلومات طالب إضغط على حرف u"
                         "\n* لعرض معلومات طالب إضغط على حرف s\n")
@@ -157,18 +157,19 @@ while True:
                 break
 
             # شرط لحذف طالب
+            # ++++++++++++++++++++ هذا هو الكود اللذي به المشكلة ++++++++++++++++++++
             elif command == "d":
                 while True :
                     remove = input("أدخل رقم الطالب المراد حذفه : ")
                     if academy_database.verify(remove):
-                        print('if')
+                        print('تم الدخول الى if')
                         academy_database.verify_message(remove)
                         academy_database.remove(remove)
-                        break
+                        break # بريك لا تعمل
                     else:
-                        print('else')
+                        print('تم الدخول الى else')
                         academy_database.verify_message(remove)
-                        break
+                        break # بريك لا تعمل
 
 
             # شرط لتعديل على طالب
@@ -211,5 +212,5 @@ while True:
             academy_database.close()
             break
 
-    # except:
+    except:
         print("هناك خطأ يرجى إعادة الإدخال")
